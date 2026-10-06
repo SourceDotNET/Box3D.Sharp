@@ -1,0 +1,4 @@
+[submodule "native/box3d"]
+	path = native/box3d
+	url = https://github.com/SourceDotNET/Box3D.Source.git
+	branch = main

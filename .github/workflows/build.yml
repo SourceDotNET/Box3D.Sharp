@@ -1,0 +1,103 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: test ${{ matrix.rid }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+          - rid: win-arm64
+            os: windows-11-arm
+          - rid: linux-x64
+            os: ubuntu-latest
+          - rid: linux-arm64
+            os: ubuntu-24.04-arm
+          - rid: linux-musl-x64
+            os: ubuntu-latest
+            alpine: true
+          - rid: linux-musl-arm64
+            os: ubuntu-24.04-arm
+            alpine: true
+          - rid: osx-x64
+            os: macos-15-intel
+          - rid: osx-arm64
+            os: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Fetch native
+        shell: bash
+        run: bash scripts/fetch-native.sh ${{ matrix.rid }}
+
+      - name: Build
+        run: dotnet build tests/Box3D.Sharp.Tests/Box3D.Sharp.Tests.csproj -c Release -p:Box3DNativeRid=${{ matrix.rid }}
+
+      - name: Test
+        if: ${{ !matrix.alpine }}
+        run: dotnet test tests/Box3D.Sharp.Tests/Box3D.Sharp.Tests.csproj -c Release --no-build
+
+      - name: Test on Alpine
+        if: ${{ matrix.alpine }}
+        shell: bash
+        run: >
+          docker run --rm -e DOTNET_ROLL_FORWARD=Major
+          -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE"
+          mcr.microsoft.com/dotnet/sdk:10.0-alpine
+          dotnet test tests/Box3D.Sharp.Tests/bin/Release/net8.0/Box3D.Sharp.Tests.dll
+
+  package:
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Fetch native
+        shell: bash
+        run: bash scripts/fetch-native.sh
+
+      - name: Build
+        run: dotnet build src/Box3D.Sharp/Box3D.Sharp.csproj -c Release
+
+      - name: Pack
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            dotnet pack src/Box3D.Sharp/Box3D.Sharp.csproj -c Release -o artifacts/packages -p:Version=${GITHUB_REF_NAME#v}
+          else
+            dotnet pack src/Box3D.Sharp/Box3D.Sharp.csproj -c Release -o artifacts/packages -p:VersionSuffix=ci.${{ github.run_number }}
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nuget
+          path: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg
+          if-no-files-found: error

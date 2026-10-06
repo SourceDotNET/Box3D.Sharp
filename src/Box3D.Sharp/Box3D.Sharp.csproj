@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Box3D</RootNamespace>
+    <AssemblyName>Box3D.Sharp</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>Box3D.Sharp</PackageId>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeInteropInPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Box3D.Sharp.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Box3D.Interop\Box3D.Interop.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Box3D.Sharp.Generator\Box3D.Sharp.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(ArtifactsNativeDir)**\*.dll;$(ArtifactsNativeDir)**\*.so;$(ArtifactsNativeDir)**\*.dylib" Pack="true" PackagePath="runtimes\%(RecursiveDir)native\%(Filename)%(Extension)" Visible="false" />
+  </ItemGroup>
+
+  <Target Name="IncludeInteropInPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Box3D.Tests</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <Box3DNativeRid Condition="'$(Box3DNativeRid)' == ''">$(NETCoreSdkRuntimeIdentifier)</Box3DNativeRid>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Box3D.Sharp\Box3D.Sharp.csproj" />
+    <ProjectReference Include="..\..\src\Box3D.Interop\Box3D.Interop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(ArtifactsNativeDir)$(Box3DNativeRid)\*" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+</Project>
