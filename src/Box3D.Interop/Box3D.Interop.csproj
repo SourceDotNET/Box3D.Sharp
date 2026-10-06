@@ -18,20 +18,26 @@
     <GeneratorInputs Include="$(GeneratorResponseFile);$(RepoRoot)native\box3d\include\box3d\*.h;$(RepoRoot).config\dotnet-tools.json" />
   </ItemGroup>
 
-  <Target Name="GenerateInterop" BeforeTargets="BeforeBuild" Inputs="@(GeneratorInputs)" Outputs="$(GeneratedStamp)">
+  <Target Name="GenerateInterop" BeforeTargets="BeforeBuild" Inputs="@(GeneratorInputs)" Outputs="$(GeneratedStamp)" Condition="'$(SkipInteropGeneration)' != 'true'">
     <ItemGroup>
       <StaleGenerated Include="$(GeneratedDir)**\*.cs" />
     </ItemGroup>
     <Delete Files="@(StaleGenerated)" />
     <Exec Command="dotnet tool restore" WorkingDirectory="$(RepoRoot)" StandardOutputImportance="low" />
-    <Exec Command="dotnet ClangSharpPInvokeGenerator &quot;@$(GeneratorResponseFile)&quot; --output &quot;$(GeneratedDir.TrimEnd('\'))&quot;" WorkingDirectory="$(RepoRoot)" IgnoreExitCode="true" StandardOutputImportance="low">
+    <Exec Command="dotnet ClangSharpPInvokeGenerator &quot;@$(GeneratorResponseFile)&quot; --output &quot;$(GeneratedDir.TrimEnd('\'))&quot;" WorkingDirectory="$(RepoRoot)" IgnoreExitCode="true" StandardOutputImportance="low" ConsoleToMSBuild="true">
       <Output TaskParameter="ExitCode" PropertyName="GeneratorExitCode" />
+      <Output TaskParameter="ConsoleOutput" ItemName="GeneratorOutput" />
     </Exec>
+    <Message Condition="!Exists('$(GeneratedDir)Native.cs')" Importance="high" Text="@(GeneratorOutput, '%0A')" />
     <Error Condition="!Exists('$(GeneratedDir)Native.cs')" Text="ClangSharpPInvokeGenerator failed (exit code $(GeneratorExitCode))." />
     <Touch Files="$(GeneratedStamp)" AlwaysCreate="true" />
   </Target>
 
-  <Target Name="IncludeGeneratedInterop" AfterTargets="GenerateInterop" BeforeTargets="BeforeBuild">
+  <Target Name="RequireGeneratedInterop" BeforeTargets="BeforeBuild" Condition="'$(SkipInteropGeneration)' == 'true'">
+    <Error Condition="!Exists('$(GeneratedDir)Native.cs')" Text="SkipInteropGeneration is set but $(GeneratedDir) has no generated interop." />
+  </Target>
+
+  <Target Name="IncludeGeneratedInterop" AfterTargets="GenerateInterop;RequireGeneratedInterop" BeforeTargets="BeforeBuild">
     <ItemGroup>
       <Compile Include="$(GeneratedDir)**\*.cs" />
     </ItemGroup>

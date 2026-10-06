@@ -8,8 +8,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  generate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Generate interop
+        run: dotnet build src/Box3D.Interop/Box3D.Interop.csproj -c Release
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: interop
+          path: src/Box3D.Interop/obj/Generated/*.cs
+          if-no-files-found: error
+
   test:
     name: test ${{ matrix.rid }}
+    needs: generate
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -44,12 +67,17 @@ jobs:
             8.0.x
             10.0.x
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: interop
+          path: src/Box3D.Interop/obj/Generated
+
       - name: Fetch native
         shell: bash
         run: bash scripts/fetch-native.sh ${{ matrix.rid }}
 
       - name: Build
-        run: dotnet build tests/Box3D.Sharp.Tests/Box3D.Sharp.Tests.csproj -c Release -p:Box3DNativeRid=${{ matrix.rid }}
+        run: dotnet build tests/Box3D.Sharp.Tests/Box3D.Sharp.Tests.csproj -c Release -p:Box3DNativeRid=${{ matrix.rid }} -p:SkipInteropGeneration=true
 
       - name: Test
         if: ${{ !matrix.alpine }}
@@ -65,7 +93,7 @@ jobs:
           dotnet test tests/Box3D.Sharp.Tests/bin/Release/net8.0/Box3D.Sharp.Tests.dll
 
   package:
-    needs: test
+    needs: [generate, test]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
@@ -78,20 +106,25 @@ jobs:
             8.0.x
             10.0.x
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: interop
+          path: src/Box3D.Interop/obj/Generated
+
       - name: Fetch native
         shell: bash
         run: bash scripts/fetch-native.sh
 
       - name: Build
-        run: dotnet build src/Box3D.Sharp/Box3D.Sharp.csproj -c Release
+        run: dotnet build src/Box3D.Sharp/Box3D.Sharp.csproj -c Release -p:SkipInteropGeneration=true
 
       - name: Pack
         shell: bash
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            dotnet pack src/Box3D.Sharp/Box3D.Sharp.csproj -c Release -o artifacts/packages -p:Version=${GITHUB_REF_NAME#v}
+            dotnet pack src/Box3D.Sharp/Box3D.Sharp.csproj -c Release -o artifacts/packages -p:SkipInteropGeneration=true -p:Version=${GITHUB_REF_NAME#v}
           else
-            dotnet pack src/Box3D.Sharp/Box3D.Sharp.csproj -c Release -o artifacts/packages -p:VersionSuffix=ci.${{ github.run_number }}
+            dotnet pack src/Box3D.Sharp/Box3D.Sharp.csproj -c Release -o artifacts/packages -p:SkipInteropGeneration=true -p:VersionSuffix=ci.${{ github.run_number }}
           fi
 
       - uses: actions/upload-artifact@v7
