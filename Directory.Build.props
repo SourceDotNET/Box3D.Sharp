@@ -12,7 +12,7 @@
 
   <PropertyGroup>
     <Authors>ZehMatt</Authors>
-    <Copyright>Copyright (c) Matt</Copyright>
+    <Copyright>Copyright (c) SourceDotNET</Copyright>
     <PackageProjectUrl>https://github.com/ZehMatt/Box3D.Sharp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ZehMatt/Box3D.Sharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
