@@ -11,10 +11,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>ZehMatt</Authors>
+    <Authors>SourceDotNET</Authors>
     <Copyright>Copyright (c) SourceDotNET</Copyright>
-    <PackageProjectUrl>https://github.com/ZehMatt/Box3D.Sharp</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/ZehMatt/Box3D.Sharp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/SourceDotNET/Box3D.Sharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SourceDotNET/Box3D.Sharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
