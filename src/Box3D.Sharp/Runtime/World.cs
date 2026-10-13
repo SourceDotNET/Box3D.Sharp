@@ -148,16 +148,16 @@ public readonly unsafe partial struct CompoundData
         }
     }
 
-    public static CompoundData FromBytes(Span<byte> bytes)
+    public static CompoundData FromBytes(ReadOnlySpan<byte> bytes)
     {
         fixed (byte* pointer = bytes)
         {
-            return new CompoundData(Native.b3ConvertBytesToCompound(pointer, bytes.Length));
+            return new CompoundData(Native.b3ValidateCompound(pointer, bytes.Length));
         }
     }
 
-    public Span<byte> ConvertToBytes()
+    public ReadOnlySpan<byte> ConvertToBytes()
     {
-        return Pointer == null ? default : new Span<byte>(Native.b3ConvertCompoundToBytes(Pointer), ByteCount);
+        return Pointer == null ? default : new ReadOnlySpan<byte>(Pointer, ByteCount);
     }
 }

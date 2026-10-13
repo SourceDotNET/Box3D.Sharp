@@ -26,7 +26,7 @@ namespace Box3D.Sharp.Generator
             "b3World_SetCustomFilterCallback", "b3World_SetPreSolveCallback",
             "b3SetAllocator", "b3SetAssertFcn", "b3SetLogFcn",
             "b3World_SetUserData", "b3World_GetUserData",
-            "b3GetCompoundMaterials", "b3ConvertCompoundToBytes", "b3ConvertBytesToCompound", "b3CreateCompound", "b3Recording_GetData",
+            "b3GetCompoundMaterials", "b3ValidateCompound", "b3CreateCompound", "b3Recording_GetData",
             "b3Hull2D", "b3SimplifyHull2D", "b3DynamicTree_Destroy",
         };
         private static readonly HashSet<string> s_excludedConstants = new HashSet<string>(StringComparer.Ordinal)
