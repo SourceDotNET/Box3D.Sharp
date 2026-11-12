@@ -186,7 +186,7 @@ public sealed class ShapeBehaviorTests
     [Fact]
     public void MeshShapeSupportsResting()
     {
-        MeshData mesh = MeshData.CreateGrid(10, 10, 1, 0, false);
+        MeshData mesh = MeshData.CreateGrid(10, 10, 1, 0, true);
         try
         {
             using var scene = new TestScene();

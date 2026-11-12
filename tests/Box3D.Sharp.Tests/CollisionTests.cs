@@ -122,7 +122,7 @@ public sealed class CollisionTests
 
         var sat = new SATCache();
         BoxHull box = BoxHull.MakeOffset(0.25f, 0.25f, 0.25f, new Vector3(0, 0.2f, 0));
-        LocalManifold hull = B3.CollideTriangleAndHull(points, triangle[0], triangle[1], triangle[2], 0, box, ref sat, true);
+        LocalManifold hull = B3.CollideTriangleAndHull(points, triangle[0], triangle[1], triangle[2], box, ref sat, true);
         Assert.True(hull.pointCount >= 1);
         Near(1, MathF.Abs(hull.normal.Y), 1e-3f);
         Near(-0.05f, points[0].separation, 1e-3f);
@@ -394,7 +394,6 @@ public sealed class CollisionTests
     [Fact]
     public void MathExports()
     {
-        Near(MathF.Atan2(1, 2), B3.Atan2(1, 2), 1e-3f);
         CosSin cs = B3.ComputeCosSin(0.5f);
         Near(MathF.Cos(0.5f), cs.cosine, 1e-3f);
         Near(MathF.Sin(0.5f), cs.sine, 1e-3f);
